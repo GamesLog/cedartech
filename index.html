@@ -3,101 +3,170 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-  <title>Arcade Maintenance - Loading...</title>
+  <title>Arcade Maintenance</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
+    :root {
+      --sat: env(safe-area-inset-top);
+      --sab: env(safe-area-inset-bottom);
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
+    }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
     }
-    .loading-spinner {
-      animation: spin 1s linear infinite;
+    
+    /* Top Navigation Bar */
+    .top-nav {
+      flex-shrink: 0;
+      background: white;
+      border-bottom: 1px solid #e5e7eb;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      padding-top: max(0.5rem, var(--sat));
     }
-    @keyframes spin {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
+    
+    /* iframe container */
+    .iframe-container {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+    
+    /* Active nav button */
+    .nav-btn.active {
+      background-color: #009688 !important;
+      color: white !important;
     }
   </style>
 </head>
-<body class="bg-gray-100 min-h-screen">
+<body>
   
   <!-- Top Navigation Bar -->
-  <header class="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
-    <div class="max-w-7xl mx-auto px-4 py-3">
+  <header class="top-nav">
+    <div class="max-w-full mx-auto px-4 pb-3">
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-3">
-          <i class="fas fa-gamepad text-primary text-2xl"></i>
-          <h1 class="text-lg font-bold text-gray-800">Arcade Maintenance</h1>
+          <i class="fas fa-gamepad text-[#009688] text-xl"></i>
+          <h1 class="text-base font-bold text-gray-800">Arcade Maintenance</h1>
         </div>
-        <nav class="flex items-center gap-2">
-          <button onclick="navigateTo('page1')" id="nav-home" class="px-3 py-1.5 bg-primary text-white rounded-lg text-sm font-medium">
-            <i class="fas fa-home mr-1"></i> Home
+        <nav class="flex items-center gap-1" id="topNav">
+          <button onclick="navigateTo('page1')" data-page="page1" class="nav-btn active px-3 py-1.5 bg-[#009688] text-white rounded-lg text-sm font-medium transition-colors">
+            <i class="fas fa-home mr-1"></i> <span class="hidden sm:inline">Home</span>
           </button>
-          <button onclick="navigateTo('dashboard')" id="nav-dashboard" class="px-3 py-1.5 bg-gray-200 text-gray-700 hover:bg-gray-300 rounded-lg text-sm font-medium">
-            <i class="fas fa-chart-line mr-1"></i> Dashboard
+          <button onclick="navigateTo('dashboard')" data-page="dashboard" class="nav-btn px-3 py-1.5 bg-gray-200 text-gray-700 hover:bg-gray-300 rounded-lg text-sm font-medium transition-colors">
+            <i class="fas fa-chart-line mr-1"></i> <span class="hidden sm:inline">Dashboard</span>
           </button>
-          <button onclick="navigateTo('page3')" id="nav-customize" class="px-3 py-1.5 bg-gray-200 text-gray-700 hover:bg-gray-300 rounded-lg text-sm font-medium">
-            <i class="fas fa-cog mr-1"></i> Customize
+          <button onclick="navigateTo('page3')" data-page="page3" class="nav-btn px-3 py-1.5 bg-gray-200 text-gray-700 hover:bg-gray-300 rounded-lg text-sm font-medium transition-colors">
+            <i class="fas fa-cog mr-1"></i> <span class="hidden sm:inline">Customize</span>
           </button>
         </nav>
       </div>
     </div>
   </header>
 
-  <!-- Main Content -->
-  <main class="max-w-7xl mx-auto px-4 py-8">
-    <div class="text-center">
-      <div class="inline-block p-6 bg-white rounded-2xl shadow-lg">
-        <i class="fas fa-circle-notch text-4xl text-primary loading-spinner mb-4"></i>
-        <h2 class="text-xl font-semibold text-gray-800 mb-2">Loading Arcade Maintenance...</h2>
-        <p class="text-gray-500">Redirecting to the application</p>
-      </div>
-      
-      <!-- Fallback links in case redirect doesn't work -->
-      <div class="mt-6 text-sm text-gray-400">
-        <p>If you're not redirected, <a href="https://script.google.com/a/macros/fegllc.com/s/AKfycbxPGnZTj-7AQAI5d0gz72ifF4mLLdrM7sbz--VYAaVEJ5eN48oIKcxW3CAjyEja4oKc/exec?page=page1" class="text-primary hover:underline">click here</a></p>
-      </div>
-    </div>
-  </main>
+  <!-- iframe container -->
+  <div class="iframe-container">
+    <iframe id="gasFrame" src="https://script.google.com/a/macros/fegllc.com/s/AKfycbxPGnZTj-7AQAI5d0gz72ifF4mLLdrM7sbz--VYAaVEJ5eN48oIKcxW3CAjyEja4oKc/exec?page=page1" allowfullscreen></iframe>
+  </div>
 
   <script>
-    // Get the page parameter from URL, default to page1
-    const urlParams = new URLSearchParams(window.location.search);
-    const page = urlParams.get('page') || 'page1';
+    // Google Apps Script URL
+    const GAS_URL = 'https://script.google.com/a/macros/fegllc.com/s/AKfycbxPGnZTj-7AQAI5d0gz72ifF4mLLdrM7sbz--VYAaVEJ5eN48oIKcxW3CAjyEja4oKc/exec';
     
-    // Update active nav button
-    document.addEventListener('DOMContentLoaded', function() {
-      const navMap = {
-        'page1': 'nav-home',
-        'dashboard': 'nav-dashboard',
-        'page3': 'nav-customize'
-      };
+    // Get iframe element
+    const iframe = document.getElementById('gasFrame');
+    
+    // Current page
+    let currentPage = 'page1';
+    
+    // Navigation function - updates iframe src
+    function navigateTo(pageName) {
+      if (pageName === currentPage && iframe.src.includes('exec')) {
+        // Already on this page, just reload the iframe
+        iframe.src = iframe.src;
+        return;
+      }
       
-      // Remove active class from all
-      document.querySelectorAll('nav button').forEach(btn => {
-        btn.classList.remove('bg-primary', 'text-white');
-        btn.classList.add('bg-gray-200', 'text-gray-700');
+      currentPage = pageName;
+      
+      // Update iframe source
+      iframe.src = GAS_URL + '?page=' + pageName;
+      
+      // Update active nav button
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        if (btn.dataset.page === pageName) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
       });
-      
-      // Add active class to current
-      const activeBtn = document.getElementById(navMap[page]);
-      if (activeBtn) {
-        activeBtn.classList.remove('bg-gray-200', 'text-gray-700');
-        activeBtn.classList.add('bg-primary', 'text-white');
+    }
+    
+    // Handle iframe load - sync nav with actual page
+    iframe.addEventListener('load', function() {
+      try {
+        // Try to get the current page from iframe URL
+        const iframeUrl = iframe.contentWindow.location.href;
+        const urlMatch = iframeUrl.match(/[?&]page=([^&]+)/);
+        if (urlMatch) {
+          const page = urlMatch[1];
+          if (page !== currentPage) {
+            currentPage = page;
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+              if (btn.dataset.page === page) {
+                btn.classList.add('active');
+              } else {
+                btn.classList.remove('active');
+              }
+            });
+          }
+        }
+      } catch(e) {
+        // Cross-origin restrictions may prevent reading iframe URL
+        console.log('Could not read iframe URL due to cross-origin restrictions');
       }
     });
     
-    // Navigation function
-    function navigateTo(pageName) {
-      const baseUrl = 'https://script.google.com/a/macros/fegllc.com/s/AKfycbxPGnZTj-7AQAI5d0gz72ifF4mLLdrM7sbz--VYAaVEJ5eN48oIKcxW3CAjyEja4oKc/exec';
-      window.location.href = baseUrl + '?page=' + pageName;
-    }
+    // Handle browser back/forward buttons
+    window.addEventListener('popstate', function(event) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const page = urlParams.get('page') || 'page1';
+      navigateTo(page);
+    });
     
-    // Auto-redirect after a short delay
-    setTimeout(function() {
-      const baseUrl = 'https://script.google.com/a/macros/fegllc.com/s/AKfycbxPGnZTj-7AQAI5d0gz72ifF4mLLdrM7sbz--VYAaVEJ5eN48oIKcxW3CAjyEja4oKc/exec';
-      window.location.href = baseUrl + '?page=' + page;
-    }, 1500);
+    // Update URL without reload when navigating
+    const originalNavigateTo = navigateTo;
+    window.navigateTo = function(pageName) {
+      // Update browser URL
+      const newUrl = window.location.pathname + '?page=' + pageName;
+      window.history.pushState({page: pageName}, '', newUrl);
+      originalNavigateTo(pageName);
+    };
+    
+    // Check for initial page parameter
+    document.addEventListener('DOMContentLoaded', function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const page = urlParams.get('page') || 'page1';
+      if (page !== 'page1') {
+        navigateTo(page);
+      }
+    });
   </script>
 </body>
 </html>
