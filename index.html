@@ -75,12 +75,29 @@
   </main>
 
   <script>
-    // Google Apps Script URL
+    // ===========================================
+    // GAS SCRIPT URL - EDIT THIS ONE PLACE
+    // ===========================================
     const GAS_URL = 'https://script.google.com/a/macros/fegllc.com/s/AKfycbxPGnZTj-7AQAI5d0gz72ifF4mLLdrM7sbz--VYAaVEJ5eN48oIKcxW3CAjyEja4oKc/exec';
     
-    // Get page parameter from URL, default to page1
+    // Map GitHub Pages paths to GAS page parameters
+    const PATH_TO_PAGE = {
+      '/': 'page1',
+      '/index.html': 'page1',
+      '/home': 'page1',
+      '/dashboard': 'dashboard',
+      '/customize': 'page3'
+    };
+    
+    // Get page from URL path
+    function getPageFromPath() {
+      const path = window.location.pathname;
+      return PATH_TO_PAGE[path] || 'page1';
+    }
+    
+    // Get page parameter from URL (for backward compatibility)
     const urlParams = new URLSearchParams(window.location.search);
-    let currentPage = urlParams.get('page') || 'page1';
+    let currentPage = urlParams.get('page') || getPageFromPath();
     
     // Update active nav button
     function updateNav() {
