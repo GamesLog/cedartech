@@ -1,5 +1,103 @@
 <!DOCTYPE html>
-<meta charset="utf-8">
-<title>Redirecting to Google Apps Script</title>
-<meta http-equiv="refresh" content="0; URL=https://script.google.com/a/macros/fegllc.com/s/AKfycbxPGnZTj-7AQAI5d0gz72ifF4mLLdrM7sbz--VYAaVEJ5eN48oIKcxW3CAjyEja4oKc/exec?page=page1">
-<link rel="canonical" href="https://script.google.com/a/macros/fegllc.com/s/AKfycbxPGnZTj-7AQAI5d0gz72ifF4mLLdrM7sbz--VYAaVEJ5eN48oIKcxW3CAjyEja4oKc/exec?page=page1">
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <title>Arcade Maintenance - Loading...</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    .loading-spinner {
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+  
+  <!-- Top Navigation Bar -->
+  <header class="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 py-3">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <i class="fas fa-gamepad text-primary text-2xl"></i>
+          <h1 class="text-lg font-bold text-gray-800">Arcade Maintenance</h1>
+        </div>
+        <nav class="flex items-center gap-2">
+          <button onclick="navigateTo('page1')" id="nav-home" class="px-3 py-1.5 bg-primary text-white rounded-lg text-sm font-medium">
+            <i class="fas fa-home mr-1"></i> Home
+          </button>
+          <button onclick="navigateTo('dashboard')" id="nav-dashboard" class="px-3 py-1.5 bg-gray-200 text-gray-700 hover:bg-gray-300 rounded-lg text-sm font-medium">
+            <i class="fas fa-chart-line mr-1"></i> Dashboard
+          </button>
+          <button onclick="navigateTo('page3')" id="nav-customize" class="px-3 py-1.5 bg-gray-200 text-gray-700 hover:bg-gray-300 rounded-lg text-sm font-medium">
+            <i class="fas fa-cog mr-1"></i> Customize
+          </button>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto px-4 py-8">
+    <div class="text-center">
+      <div class="inline-block p-6 bg-white rounded-2xl shadow-lg">
+        <i class="fas fa-circle-notch text-4xl text-primary loading-spinner mb-4"></i>
+        <h2 class="text-xl font-semibold text-gray-800 mb-2">Loading Arcade Maintenance...</h2>
+        <p class="text-gray-500">Redirecting to the application</p>
+      </div>
+      
+      <!-- Fallback links in case redirect doesn't work -->
+      <div class="mt-6 text-sm text-gray-400">
+        <p>If you're not redirected, <a href="https://script.google.com/a/macros/fegllc.com/s/AKfycbxPGnZTj-7AQAI5d0gz72ifF4mLLdrM7sbz--VYAaVEJ5eN48oIKcxW3CAjyEja4oKc/exec?page=page1" class="text-primary hover:underline">click here</a></p>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Get the page parameter from URL, default to page1
+    const urlParams = new URLSearchParams(window.location.search);
+    const page = urlParams.get('page') || 'page1';
+    
+    // Update active nav button
+    document.addEventListener('DOMContentLoaded', function() {
+      const navMap = {
+        'page1': 'nav-home',
+        'dashboard': 'nav-dashboard',
+        'page3': 'nav-customize'
+      };
+      
+      // Remove active class from all
+      document.querySelectorAll('nav button').forEach(btn => {
+        btn.classList.remove('bg-primary', 'text-white');
+        btn.classList.add('bg-gray-200', 'text-gray-700');
+      });
+      
+      // Add active class to current
+      const activeBtn = document.getElementById(navMap[page]);
+      if (activeBtn) {
+        activeBtn.classList.remove('bg-gray-200', 'text-gray-700');
+        activeBtn.classList.add('bg-primary', 'text-white');
+      }
+    });
+    
+    // Navigation function
+    function navigateTo(pageName) {
+      const baseUrl = 'https://script.google.com/a/macros/fegllc.com/s/AKfycbxPGnZTj-7AQAI5d0gz72ifF4mLLdrM7sbz--VYAaVEJ5eN48oIKcxW3CAjyEja4oKc/exec';
+      window.location.href = baseUrl + '?page=' + pageName;
+    }
+    
+    // Auto-redirect after a short delay
+    setTimeout(function() {
+      const baseUrl = 'https://script.google.com/a/macros/fegllc.com/s/AKfycbxPGnZTj-7AQAI5d0gz72ifF4mLLdrM7sbz--VYAaVEJ5eN48oIKcxW3CAjyEja4oKc/exec';
+      window.location.href = baseUrl + '?page=' + page;
+    }, 1500);
+  </script>
+</body>
+</html>
