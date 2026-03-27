@@ -117,20 +117,96 @@
       </div>
     </div>
 
-    <iframe
-      id="appFrame"
-      src=""
-      allow="clipboard-write; clipboard-read"
-      sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation"
-      loading="eager"
-    ></iframe>
+<!-- Container for the App -->
+<div id="app-container" style="width: 100%; height: 800px; border: 1px solid #ccc; border-radius: 8px; position: relative; overflow: hidden;">
+  
+  <!-- 1. The Login UI (Shown if user needs to authenticate) -->
+  <div id="login-ui" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; background: #f9fafb;">
+    <h2 style="font-family: sans-serif; color: #374151;">Technician Dashboard Secure Access</h2>
+    <p style="font-family: sans-serif; color: #6b7280; margin-bottom: 20px;">Please authenticate with JumpCloud to view this tool.</p>
+    <button onclick="openAuthPopup()" style="padding: 12px 24px; background-color: #3b82f6; color: white; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; font-weight: bold;">
+      Log In via SSO
+    </button>
   </div>
 
-  <script>
-    // ===========================================
-    // GAS SCRIPT URL - EDIT THIS ONE PLACE
-    // ===========================================
-    const GAS_URL = 'https://script.google.com/a/macros/fegllc.com/s/AKfycbwd5Kg_rThwjZKTaTrAojETY3Xm7bAKM-VD6SP1jQwKxzJp5wysMzstVn4tibRy4VWD/exec';
+  <!-- 2. The Loading Spinner -->
+  <div id="loading-ui" style="display: flex; align-items: center; justify-content: center; height: 100%; font-family: sans-serif; color: #6b7280;">
+    Verifying session...
+  </div>
+
+  <!-- 3. The Actual Iframe (Hidden until authenticated) -->
+  <iframe id="dashboard-iframe" style="display: none; width: 100%; height: 100%; border: none;"></iframe>
+</div>
+
+<script>
+  // REPLACE WITH YOUR ACTUAL DEPLOYED WEB APP URL
+  const GAS_URL = "https://script.google.com/a/macros/fegllc.com/s/AKfycby2RYKFLD8bNYbTv-GmfCCcX10BP6ezRfI_FzKdSFZ9baw2DbfWiChAIqskxwZy4RQf/exec";
+  
+  const loginUi = document.getElementById('login-ui');
+  const loadingUi = document.getElementById('loading-ui');
+  const iframe = document.getElementById('dashboard-iframe');
+  
+  let authTimeout;
+
+  // Listen for the success message from the GAS script (either from popup or hidden iframe)
+  window.addEventListener('message', function(event) {
+    if (event.data === 'auth_success') {
+      clearTimeout(authTimeout); // Stop the timeout
+      showDashboard();
+    }
+  });
+
+  // Function to open the JumpCloud/Google login in a popup
+  function openAuthPopup() {
+    // Open the authCheck page in a popup
+    const popupWidth = 500;
+    const popupHeight = 600;
+    const left = (window.innerWidth / 2) - (popupWidth / 2);
+    const top = (window.innerHeight / 2) - (popupHeight / 2);
+    
+    window.open(
+      `${GAS_URL}?page=authCheck`, 
+      'SSOLogin', 
+      `width=${popupWidth},height=${popupHeight},top=${top},left=${left}`
+    );
+  }
+
+  // Function to reveal the iframe once we know they are logged in
+  function showDashboard() {
+    loginUi.style.display = 'none';
+    loadingUi.style.display = 'none';
+    iframe.style.display = 'block';
+    
+    // Only set the src once we know we won't hit a JumpCloud block
+    if (!iframe.src) {
+      iframe.src = `${GAS_URL}?page=dashboard`;
+    }
+  }
+
+  // INITIAL CHECK: Try to load the authCheck invisibly in the iframe.
+  // If we don't get a response in 3 seconds, assume JumpCloud blocked it.
+  function checkInitialAuth() {
+    loginUi.style.display = 'none';
+    iframe.style.display = 'none';
+    loadingUi.style.display = 'flex';
+
+    // Create a temporary hidden iframe to check auth
+    const pingFrame = document.createElement('iframe');
+    pingFrame.style.display = 'none';
+    pingFrame.src = `${GAS_URL}?page=authCheck`;
+    document.body.appendChild(pingFrame);
+
+    // If we don't hear 'auth_success' in 3.5 seconds, show the login button
+    authTimeout = setTimeout(() => {
+      loadingUi.style.display = 'none';
+      loginUi.style.display = 'flex';
+      pingFrame.remove(); // Cleanup
+    }, 3500);
+  }
+
+  // Run the check when the page loads
+  checkInitialAuth();
+</script>
 
     // Map GitHub Pages paths to GAS page parameters
     const PATH_TO_PAGE = {
