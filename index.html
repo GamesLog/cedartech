@@ -66,7 +66,7 @@
 
   <!-- Main Content Container -->
   <div id="mainContainer" class="flex-1 relative overflow-hidden bg-gray-50">
-    
+
     <!-- 1. Login UI (Hidden by default) -->
     <div id="loginOverlay" class="absolute inset-0 flex flex-col items-center justify-center bg-gray-50 z-30 hidden">
       <i class="fas fa-lock text-4xl text-gray-400 mb-4"></i>
@@ -90,7 +90,7 @@
 <script>
     // --- CONFIGURATION ---
     const GAS_URL = "https://script.google.com/a/macros/fegllc.com/s/AKfycbxytC7Sw6CG1rcl35V4cxcjZ-Dro1JAPfoaEL_Osw7VhudXAvOJzptCreYYSiMm6tsd/exec";
-    
+
     const PATH_TO_PAGE = {
       '/': 'page1',
       '/index.html': 'page1',
@@ -104,7 +104,7 @@
     const loadingOverlay = document.getElementById('loadingOverlay');
     const loadingText = document.getElementById('loadingText');
     const loginOverlay = document.getElementById('loginOverlay');
-    
+
     // --- STATE ---
     let authTimeout;
     let isAuthenticated = false;
@@ -125,15 +125,35 @@
       authTimeout = setTimeout(() => {
         loadingOverlay.classList.add('hidden');
         loginOverlay.classList.remove('hidden');
-        pingFrame.remove(); 
+        pingFrame.remove();
       }, 3500);
     }
 
-    // 2. Listen for the invisible ping succeeding (if they are already logged in)
+    // 2. Listen for messages from iframe (auth + storage relay)
     window.addEventListener('message', function(event) {
+      // Auth success message
       if (event.data === 'auth_success') {
         clearTimeout(authTimeout);
         proceedToApp();
+        return;
+      }
+
+      // Storage relay: iframe can't reliably use localStorage (3rd-party context).
+      // We relay storage operations through the parent (GitHub Pages, 1st-party).
+      const data = event.data;
+      if (!data || typeof data !== 'object' || !data.type) return;
+
+      if (data.type === 'storage-set') {
+        try { localStorage.setItem(data.key, data.value); } catch (e) { console.error('Storage relay set error:', e); }
+      } else if (data.type === 'storage-get') {
+        try {
+          const value = localStorage.getItem(data.key);
+          if (event.source) {
+            event.source.postMessage({ type: 'storage-result', key: data.key, value: value, requestId: data.requestId }, '*');
+          }
+        } catch (e) { console.error('Storage relay get error:', e); }
+      } else if (data.type === 'storage-remove') {
+        try { localStorage.removeItem(data.key); } catch (e) { console.error('Storage relay remove error:', e); }
       }
     });
 
@@ -143,10 +163,10 @@
       const popupHeight = 600;
       const left = (window.innerWidth / 2) - (popupWidth / 2);
       const top = (window.innerHeight / 2) - (popupHeight / 2);
-      
+
       const authWindow = window.open(
-        `${GAS_URL}?page=authCheck`, 
-        'SSOLogin', 
+        `${GAS_URL}?page=authCheck`,
+        'SSOLogin',
         `width=${popupWidth},height=${popupHeight},top=${top},left=${left}`
       );
 
@@ -184,7 +204,7 @@
       loadingText.textContent = "Loading Arcade Maintenance...";
       loadingOverlay.classList.remove('hidden');
       iframe.classList.add('hidden');
-      
+
       iframe.src = GAS_URL + '?page=' + pageName;
     }
 
@@ -216,7 +236,7 @@
     // --- INITIALIZATION ---
     document.addEventListener('DOMContentLoaded', function() {
       updateNav();
-      
+
       // Start the Auth Check flow
       checkInitialAuth();
 
