@@ -1,11 +1,14 @@
-const CACHE_NAME = 'arcade-maint-v1';
+const CACHE_NAME = 'arcade-maint-v2';
 const OFFLINE_URL = '/offline.html';
 
 // Assets to cache immediately on install
 const PRECACHE_ASSETS = [
   '/',
   '/index.html',
-  '/manifest.json'
+  '/offline.html',
+  '/manifest.json',
+  '/icon-192.png',
+  '/icon-512.png'
 ];
 
 // Install event - cache core assets
