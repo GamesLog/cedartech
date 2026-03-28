@@ -61,11 +61,13 @@
       transform: scale(0.98);
     }
 
-    /* Location dropdown in header */
-    .location-dropdown {
+    /* Dropdown shared styles (location + resources) */
+    .location-dropdown,
+    .resources-dropdown {
       position: relative;
     }
-    .location-dropdown-menu {
+    .location-dropdown-menu,
+    .resources-dropdown-menu {
       position: absolute;
       top: 100%;
       right: 0;
@@ -79,10 +81,12 @@
       min-width: 220px;
       display: none;
     }
-    .location-dropdown-menu.open {
+    .location-dropdown-menu.open,
+    .resources-dropdown-menu.open {
       display: block;
     }
-    .location-dropdown-item {
+    .location-dropdown-item,
+    .resources-dropdown-item {
       padding: 0.75rem 1rem;
       display: flex;
       align-items: center;
@@ -91,7 +95,8 @@
       transition: background 0.15s;
       font-size: 0.9rem;
     }
-    .location-dropdown-item:hover {
+    .location-dropdown-item:hover,
+    .resources-dropdown-item:hover {
       background: #f3f4f6;
     }
     .location-dropdown-item.active {
@@ -99,7 +104,11 @@
       color: #009688;
       font-weight: 600;
     }
-    .location-dropdown-item i {
+    .resources-dropdown-item:hover {
+      background: #ede9fe;
+    }
+    .location-dropdown-item i,
+    .resources-dropdown-item i {
       width: 20px;
       text-align: center;
     }
@@ -137,6 +146,23 @@
           <button onclick="navigateTo('page3')" data-page="page3" class="nav-btn px-3 py-1.5 bg-gray-200 text-gray-700 hover:bg-gray-300 rounded-lg text-sm font-medium transition-colors">
             <i class="fas fa-cog mr-1"></i> <span class="hidden sm:inline">Customize</span>
           </button>
+
+          <!-- Resources Dropdown -->
+          <div class="resources-dropdown">
+            <button onclick="toggleResourcesDropdown()" id="resourcesBtn" class="px-3 py-1.5 bg-purple-50 text-purple-600 border border-purple-300/50 rounded-lg text-sm font-medium transition-colors hover:bg-purple-100 flex items-center gap-1.5">
+              <i class="fas fa-book-open"></i>
+              <span class="hidden sm:inline">Resources</span>
+              <i class="fas fa-chevron-down text-xs ml-0.5"></i>
+            </button>
+            <div id="resourcesDropdownMenu" class="resources-dropdown-menu">
+              <div class="px-3 py-2 bg-gray-50 border-b border-gray-100">
+                <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Resources</span>
+              </div>
+              <div id="resourcesDropdownItems">
+                <!-- Items injected by JS -->
+              </div>
+            </div>
+          </div>
 
           <!-- Location Dropdown -->
           <div class="location-dropdown">
@@ -221,6 +247,26 @@
       }
     };
 
+    // ===========================================
+    // RESOURCES CONFIGURATION
+    // These are global resources available to ALL locations.
+    // They are NOT saved to localStorage — they open directly in the iframe.
+    // ===========================================
+    const RESOURCES = {
+      'game-manuals': {
+        name: 'Game Manuals',
+        icon: 'fa-book',
+        color: '#8b5cf6',
+        url: 'https://script.google.com/a/macros/fegllc.com/s/AKfycbx5L-7Z8euZxZbg0tm0P5gsM7giHybyLnO0Aoplzyp-SMFssdnhpjtUJs8XYpH_7AAZ/exec'
+      },
+      '3d-store': {
+        name: '3D Store',
+        icon: 'fa-cube',
+        color: '#ec4899',
+        url: 'https://script.google.com/a/macros/fegllc.com/s/AKfycbyBC5Yx-ad2FPqTg9woV1PUp-eM7EhY3NCgfTv2APzvgDVb42B8Ll52TVugctJ_T-9V/exec'
+      }
+    };
+
     const PATH_TO_PAGE = {
       '/': 'page1',
       '/index.html': 'page1',
@@ -239,6 +285,7 @@
     // --- STATE ---
     let authTimeout;
     let isAuthenticated = false;
+    let isLoadingResource = false; // true when loading a resource (not a location page)
     let currentLocation = null; // location key from LOCATIONS
     let GAS_URL = ''; // set dynamically based on location
     const urlParams = new URLSearchParams(window.location.search);
@@ -340,15 +387,68 @@
     function toggleLocationDropdown() {
       const menu = document.getElementById('locationDropdownMenu');
       menu.classList.toggle('open');
+      // Close resources dropdown if open
+      document.getElementById('resourcesDropdownMenu').classList.remove('open');
     }
 
-    // Close dropdown when clicking outside
+    // Close dropdowns when clicking outside
     document.addEventListener('click', function(e) {
-      const dropdown = document.querySelector('.location-dropdown');
-      if (dropdown && !dropdown.contains(e.target)) {
+      const locDropdown = document.querySelector('.location-dropdown');
+      if (locDropdown && !locDropdown.contains(e.target)) {
         document.getElementById('locationDropdownMenu').classList.remove('open');
       }
+      const resDropdown = document.querySelector('.resources-dropdown');
+      if (resDropdown && !resDropdown.contains(e.target)) {
+        document.getElementById('resourcesDropdownMenu').classList.remove('open');
+      }
     });
+
+    // ===========================================
+    // RESOURCES DROPDOWN LOGIC
+    // ===========================================
+
+    function toggleResourcesDropdown() {
+      const menu = document.getElementById('resourcesDropdownMenu');
+      menu.classList.toggle('open');
+      // Close location dropdown if open
+      document.getElementById('locationDropdownMenu').classList.remove('open');
+    }
+
+    function buildResourcesDropdownItems() {
+      const container = document.getElementById('resourcesDropdownItems');
+      container.innerHTML = '';
+
+      Object.keys(RESOURCES).forEach(key => {
+        const res = RESOURCES[key];
+        const item = document.createElement('div');
+        item.className = 'resources-dropdown-item';
+        item.onclick = function() { openResource(key); };
+        item.innerHTML = `<i class="fas ${res.icon}" style="color: ${res.color};"></i> ${res.name}`;
+        container.appendChild(item);
+      });
+    }
+
+    function openResource(resourceKey) {
+      const res = RESOURCES[resourceKey];
+      if (!res) return;
+
+      // Close the dropdown
+      document.getElementById('resourcesDropdownMenu').classList.remove('open');
+
+      // Clear active nav state (resources are not a "page")
+      document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+
+      // Flag so the iframe load handler knows this is a resource
+      isLoadingResource = true;
+
+      // Show loading
+      loadingText.textContent = `Loading ${res.name}...`;
+      loadingOverlay.classList.remove('hidden');
+      iframe.classList.add('hidden');
+
+      // Load the resource directly in the iframe (no auth gating — separate GAS app)
+      iframe.src = res.url;
+    }
 
     // ===========================================
     // AUTHENTICATION LOGIC
@@ -452,7 +552,12 @@
     }
 
     iframe.addEventListener('load', function() {
-      if (isAuthenticated && iframe.src.includes('page=')) {
+      if (isLoadingResource) {
+        // Resource loaded — show iframe regardless of auth state
+        isLoadingResource = false;
+        loadingOverlay.classList.add('hidden');
+        iframe.classList.remove('hidden');
+      } else if (isAuthenticated && iframe.src.includes('page=')) {
         loadingOverlay.classList.add('hidden');
         iframe.classList.remove('hidden');
       }
@@ -482,6 +587,7 @@
       updateNav();
       buildLocationGrid();
       buildLocationDropdownItems();
+      buildResourcesDropdownItems();
 
       // Check if user has a saved location
       const savedLoc = getSavedLocation();
