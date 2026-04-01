@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
   <meta name="theme-color" content="#009688">
   <meta name="description" content="Arcade maintenance log and tracking system">
-  <link rel="manifest" href="/cedartech/manifest.json">
-  <link rel="icon" type="image/png" sizes="192x192" href="/cedartech/icon-192.png">
-  <link rel="icon" type="image/png" sizes="512x512" href="/cedartech/icon-512.png">
-  <link rel="apple-touch-icon" sizes="192x192" href="/cedartech/icon-192.png">
+  <link rel="manifest" href="/tech/manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="/tech/icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="/tech/icon-512.png">
+  <link rel="apple-touch-icon" sizes="192x192" href="/tech/icon-192.png">
   <!-- iOS PWA meta tags -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -17,7 +17,7 @@
   <title>Arcade Maintenance</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="/cedartech/mobile-arcade.css">
+  <link rel="stylesheet" href="/tech/mobile-arcade.css">
   <style>
     :root {
       --sat: env(safe-area-inset-top);
@@ -603,7 +603,7 @@
 
       // PWA Service Worker
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/cedartech/service-worker.js').then((registration) => {
+        navigator.serviceWorker.register('/tech/service-worker.js').then((registration) => {
           registration.addEventListener('updatefound', () => {
             const newWorker = registration.installing;
             newWorker.addEventListener('statechange', () => {
